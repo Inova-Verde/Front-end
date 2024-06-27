@@ -2,6 +2,7 @@ import React, { ChangeEvent, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import { Link } from 'react-router-dom';
+import { cadastrarUsuario } from '../../services/Service';
 
 const Cadastro: React.FC = () => {
   const [usuario, setUsuario] = useState({
@@ -11,6 +12,8 @@ const Cadastro: React.FC = () => {
     senha: '',
     confirmarSenha: '',
   });
+
+  const [usuarioResposta, setUsuarioResposta] = useState(null);
 
   const [mostrarSenha, setMostrarSenha] = useState(false);
   const [mostrarConfirmarSenha, setMostrarConfirmarSenha] = useState(false);
@@ -34,17 +37,34 @@ const Cadastro: React.FC = () => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const cadastrarNovoUsuario = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setUsuario({
-      nome: '',
-      usuario: '',
-      foto: '',
-      senha: '',
-      confirmarSenha: '',
-    });
-    setSenhaValida(false);
-    setConfirmarSenhaValida(false);
+    if (usuario.confirmarSenha === usuario.senha && usuario.senha.length >= 8) {
+      try {
+        await cadastrarUsuario(`/usuarios/cadastrar`, usuario, setUsuarioResposta);
+        alert('Usuário cadastrado com sucesso');
+        setUsuario({
+          nome: '',
+          usuario: '',
+          foto: '',
+          senha: '',
+          confirmarSenha: '',
+        });
+        setSenhaValida(false);
+        setConfirmarSenhaValida(false);
+      } catch (error) {
+        alert('Erro ao cadastrar usuário');
+      }
+    } else {
+      alert('Dados inconsistentes. Verifique as informações de cadastro.');
+      setUsuario((prevUsuario) => ({
+        ...prevUsuario,
+        senha: '',
+        confirmarSenha: '',
+      }));
+      setSenhaValida(false);
+      setConfirmarSenhaValida(false);
+    }
   };
 
   return (
@@ -53,7 +73,7 @@ const Cadastro: React.FC = () => {
         className="absolute inset-0 bg-cover bg-center z-0"
         style={{ backgroundImage: "url('/cadastro.jpg')" }}
       />
-      <form onSubmit={handleSubmit} className="max-w-md w-full bg-white bg-opacity-80 p-8 rounded-lg shadow-lg my-8 z-10">
+      <form onSubmit={cadastrarNovoUsuario} className="max-w-md w-full bg-white bg-opacity-80 p-8 rounded-lg shadow-lg my-8 z-10">
         <h2 className="text-2xl font-semibold text-gray-800 mb-8 text-center">Cadastro</h2>
         <div className="mb-4">
           <label htmlFor="nome" className="block text-gray-700 font-semibold mb-2">
